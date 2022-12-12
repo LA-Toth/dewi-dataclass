@@ -100,26 +100,19 @@ class Node(collections.abc.MutableMapping):
         return len(self.__dict__)
 
     def __getitem__(self, key):
-        try:
-            return getattr(self, key)
-        except AttributeError:
-            attr = self.get_annotation(key)
-            if attr is None:
-                raise
-
-            self.__setitem__(key, attr())
+        return getattr(self, key)
 
     def __getattr__(self, key):
-        try:
-            return super().__getattr__(key)
-        except AttributeError:
-            attr = self.get_annotation(key)
-            if attr is None:
-                raise
+        if key in self.__dict__:
+            return self.__dict__[key]
 
-            v = attr()
-            self.__setitem__(key, v)
-            return v
+        attr = self.get_annotation(key)
+        if attr is None:
+            raise AttributeError(key)
+
+        v = attr()
+        self.__setitem__(key, v)
+        return v
 
     def __setitem__(self, key, value):
         return setattr(self, key, value)
@@ -137,7 +130,7 @@ class Node(collections.abc.MutableMapping):
         return item in self.__dict__ or self.has_annotation(item)
 
     def has_annotation(self, name: str):
-        if name not in self.__annotations__:
+        if name not in self.__class__.__annotations__:
             for base in yield_bases(self.__class__):
                 if name in base.__annotations__:
                     return True
@@ -147,14 +140,8 @@ class Node(collections.abc.MutableMapping):
         return True
 
     def get_annotation(self, name: str):
-        def yield_bases(cls):
-            for base in cls.__bases__:
-                if base != object and base != Node:
-                    yield base
-                    yield from yield_bases(base)
-
-        if name in self.__annotations__:
-            return self.__annotations__[name]
+        if name in self.__class__.__annotations__:
+            return self.__class__.__annotations__[name]
         else:
             for base in yield_bases(self.__class__):
                 if name in base.__annotations__:

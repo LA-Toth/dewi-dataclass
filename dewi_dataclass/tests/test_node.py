@@ -22,6 +22,7 @@ class N2(Node):
     list_of_n1s: list[N1]
     title: str
     count: int
+    args: Node
 
     def __init__(self):
         self.list_of_n1s = NodeList(N1)
@@ -96,6 +97,30 @@ class NodeAndNodeListTest(unittest.TestCase):
     def test_that_get_unknown_member_raises_attribute_error(self):
         self.assertRaises(AttributeError, lambda: self.tested.a_member)
         self.assertRaises(AttributeError, lambda: self.tested['another_member'])
+
+    def test_that_in_can_be_used_with_pure_node(self):
+        n = Node()
+        # if node calls self.__annotation__ instead of self.__class__.__annotation__
+        # this test is inifinitely recursive, getattr() <-> get_annotation()
+        self.assertFalse('non_existent' in n)
+
+    def test_that_in_can_be_used_with_frozen_node_subclass(self):
+        @frozen
+        class Frozen(Node):
+            pass
+
+        n = Frozen()
+        # if node calls self.__annotation__ instead of self.__class__.__annotation__
+        # this test is inifinitely recursive, getattr() <-> get_annotation()
+        self.assertFalse('non_existent' in n)
+
+    def test_that_in_can_be_used_on_tested(self):
+        self.assertTrue('title' in self.tested)
+        # this doesn't trigger recursion
+        self.assertFalse('non_existent' in self.tested)
+
+    def test_that_in_can_be_used_for_annotation_only_members(self):
+        self.assertTrue('args' in self.tested)
 
     def test_that_key_can_be_invalid_identifier(self):
         self.assertNotIn('a-value', self.tested)
