@@ -3,9 +3,6 @@
 
 import collections.abc
 
-import yaml
-from yaml.dumper import Dumper
-
 
 def _frozen__setattr__(cls, self, key, value):
     if key not in self.__dict__ and not self.has_annotation(key):
@@ -164,6 +161,22 @@ class Node(collections.abc.MutableMapping):
         n.load_from(kwargs, raise_error=True)
         return n
 
+    def as_dict(self) -> dict:
+        """
+        Convert the object to core Python data structures (dict; members: dict, list, etc.).
+        :return: the converted dictionary
+        """
+        result = {}
+        for key, value in self.__dict__.items():
+            if isinstance(value, Node):
+                result[key] = value.as_dict()
+            elif isinstance(value, NodeList):
+                result[key] = value.as_list()
+            else:
+                result[key] = value
+
+        return result
+
 
 class NodeList(list):
     type_: type[Node]
@@ -181,6 +194,9 @@ class NodeList(list):
                 node = self.type_()
                 node.load_from(item)
                 self.append(node)
+
+    def as_list(self) -> list:
+        return [x.as_dict() if isinstance(x, Node) else x for x in self]
 
 
 def load_node(node: Node, d: dict, *, raise_error: bool = False):
@@ -207,13 +223,10 @@ def load_node(node: Node, d: dict, *, raise_error: bool = False):
             raise AttributeError(key)
 
 
-def represent_node(dumper: Dumper, data: Node):
-    return dumper.represent_dict(data)
-
-
-def represent_node_list(dumper: Dumper, data: NodeList):
-    return dumper.represent_list(data)
-
-
-yaml.add_multi_representer(Node, represent_node)
-yaml.add_multi_representer(NodeList, represent_node_list)
+def as_dict(data: Node) -> dict:
+    """
+    Wrapper method of Node.as_dict() inspired by attrs.as_dict()
+    :param data: Data to be converted to core Python data structures
+    :return: the converted dictionary
+    """
+    return data.as_dict()

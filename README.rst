@@ -143,3 +143,26 @@ but the class can be extended via inheritance in a sublcass.
 
     point = Point()
     point.z = 0.0       # ❌ doesn't work, raises AttributeError
+
+
+as_dict(): convert to core Python types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For YAML / JSON serialization either the types should be registered
+or in this case a dedicated method is required to convert the dict-like
+and list-like objects to actual dicts and lists.
+
+As the top-level data structure is a specialized dictionary, ``as_dict()`` can be used:
+
+.. code-block:: python
+
+    from dewi_dataclass import DataClass, as_dict
+
+    class Point(DataClass):
+        ...
+
+    point = Point()
+
+    print(point.as_dict())
+    # or
+    print(as_dict(point))

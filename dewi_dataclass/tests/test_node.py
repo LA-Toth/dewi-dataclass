@@ -3,9 +3,8 @@
 
 import unittest
 
-import yaml
-
 import dewi_dataclass
+import dewi_dataclass.node
 from dewi_dataclass.node import Node, NodeList, frozen
 
 
@@ -30,19 +29,20 @@ class N2(Node):
         self.count = 100
 
 
-NODE_TEST_RESULT = """count: 100
-list_of_n1s:
-- x: 0
-  y: null
-- x: 0
-  y: 42
-title: null
-"""
+TEST_RESULT_DICT = {
+    'count': 100,
+    'list_of_n1s': [
+        dict(x=0, y=None),
+        dict(x=0, y=42),
+    ],
+    'title': None,
+}
 
-NODE_EMPTY_RESULT = """count: 100
-list_of_n1s: []
-title: null
-"""
+EMPTY_N2_DICT = {
+    'count': 100,
+    'list_of_n1s': [],
+    'title': None,
+}
 
 
 class NodeAndNodeListTest(unittest.TestCase):
@@ -55,24 +55,19 @@ class NodeAndNodeListTest(unittest.TestCase):
         self.tested.list_of_n1s.append(node)
 
     def test_empty_object(self):
-        self.assertEqual(NODE_EMPTY_RESULT, yaml.dump(N2()))
-        self.tested = N2()
-        self.assertEqual(NODE_EMPTY_RESULT, yaml.dump(self.tested))
-
-    def test_yaml_dump(self):
-        self.assertEqual(NODE_TEST_RESULT, yaml.dump(self.tested))
+        self.assertEqual(EMPTY_N2_DICT, N2())
 
     def test_load_from_dict(self):
-        self.tested = N2()
-        self.assertEqual(NODE_EMPTY_RESULT, yaml.dump(self.tested))
-        self.tested.load_from(dict(list_of_n1s=[dict(x=0, y=None), dict(x=0, y=42)], title=None))
-        self.assertEqual(NODE_TEST_RESULT, yaml.dump(self.tested))
+        tested = N2()
+        tested.load_from(dict(list_of_n1s=[dict(x=0, y=None), dict(x=0, y=42)], title=None))
+        self.assertEqual(TEST_RESULT_DICT, tested)
+        self.assertNotIsInstance(tested, dict)
 
-    def test_load_from_yaml(self):
-        self.tested = N2()
-        self.assertEqual(NODE_EMPTY_RESULT, yaml.dump(self.tested))
-        self.tested.load_from(yaml.load(NODE_TEST_RESULT, Loader=yaml.SafeLoader))
-        self.assertEqual(NODE_TEST_RESULT, yaml.dump(self.tested))
+    def test_as_dict(self):
+        tested = N2()
+        tested.load_from(dict(list_of_n1s=[dict(x=0, y=None), dict(x=0, y=42)], title=None))
+        self.assertEqual(TEST_RESULT_DICT, tested.as_dict())
+        self.assertIsInstance(tested.as_dict(), dict)
 
     def test_size_of_empty_object(self):
         self.assertEqual(3, len(N2()))
@@ -253,10 +248,13 @@ class NodeAndNodeListTest(unittest.TestCase):
 class DataClassModuleTest(unittest.TestCase):
 
     def test_that_data_class_is_the_node(self):
-        self.assertEqual(dewi_dataclass.DataClass, Node, 'DataClass should be the Node class')
+        self.assertEqual(dewi_dataclass.DataClass, dewi_dataclass.node.Node, 'DataClass should be the Node class')
 
     def test_that_data_list_is_the_node_list(self):
-        self.assertEqual(dewi_dataclass.DataList, NodeList, 'DataList should be the NodeList class')
+        self.assertEqual(dewi_dataclass.DataList, dewi_dataclass.node.NodeList, 'DataList should be the NodeList class')
 
     def test_that_frozen_is_available(self):
-        self.assertEqual(dewi_dataclass.frozen, frozen)
+        self.assertEqual(dewi_dataclass.frozen, dewi_dataclass.node.frozen)
+
+    def test_that_as_dict_is_available(self):
+        self.assertEqual(dewi_dataclass.as_dict, dewi_dataclass.node.as_dict)
