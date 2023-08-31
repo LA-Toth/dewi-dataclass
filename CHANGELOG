@@ -2,3 +2,7 @@
     - Extraction from dewi-core
     - Enhanced  - add @frozen
     - Drop YAML dependency in the code
+
+1.0.0
+    - remove pyyaml from setup.py
+    - disable in-progress tests

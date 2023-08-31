@@ -15,7 +15,7 @@ setup(
     name="dewi-dataclass",
     description="DEWI DataClass: a (mutable) data class / config object implementation",
     license="Apache",
-    version="1.0.0a",
+    version="1.0.0",
     author="Laszlo Attila Toth",
     author_email="python-dewi@laszloattilatoth.me",
     maintainer="Laszlo Attila Toth",
