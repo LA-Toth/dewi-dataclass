@@ -49,6 +49,5 @@ setup(
     python_requires='>=3.10',
     packages=find_packages(exclude=['*tests*']),
     install_requires=[
-        'pyyaml',
     ]
 )

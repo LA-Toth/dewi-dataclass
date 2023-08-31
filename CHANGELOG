@@ -1,3 +1,4 @@
 1.0.0a
     - Extraction from dewi-core
-    - Enhanced
+    - Enhanced  - add @frozen
+    - Drop YAML dependency in the code
